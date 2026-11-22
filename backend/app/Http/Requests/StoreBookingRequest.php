@@ -20,12 +20,13 @@ class StoreBookingRequest extends FormRequest
      */
     public function rules(): array
     {
+        // exists Laravel пропускает, если integer уже не прошёл: "abc" до запроса к bigint не дойдёт.
+        // uuid у ключа: без проверки кривой ключ уронил бы Postgres на колонке uuid.
+        // (Комментарии здесь, а не над полями: Scramble берёт их в описание API.)
         return [
-            // exists Laravel пропускает, если integer уже не прошёл: "abc" до запроса к bigint не дойдёт
             'slot_id' => ['required', 'integer', 'exists:slots,id'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255'],
-            // без проверки кривой ключ уронил бы Postgres на колонке uuid
             'idempotency_key' => ['nullable', 'uuid'],
         ];
     }

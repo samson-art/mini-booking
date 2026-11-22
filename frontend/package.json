@@ -16,9 +16,11 @@
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/ e2e/",
     "format:check": "prettier --check --experimental-cli src/ e2e/",
-    "check": "oxlint . && eslint . && npm run format:check && npm run type-check && vitest --run --passWithNoTests"
+    "check": "oxlint . && eslint . && npm run format:check && npm run type-check && vitest --run"
   },
   "dependencies": {
+    "@primeuix/themes": "^2.0.3",
+    "primevue": "^4.5.5",
     "vue": "^3.5.42"
   },
   "devDependencies": {
@@ -39,6 +41,7 @@
     "jiti": "^2.7.0",
     "jsdom": "^30.0.1",
     "npm-run-all2": "^9.0.3",
+    "openapi-typescript": "^7.13.0",
     "oxlint": "~1.82.0",
     "prettier": "3.9.6",
     "typescript": "~6.0.0",
@@ -50,5 +53,10 @@
   },
   "engines": {
     "node": "^22.18.0 || >=24.12.0"
+  },
+  "overrides": {
+    "openapi-typescript": {
+      "typescript": "$typescript"
+    }
   }
 }

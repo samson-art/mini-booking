@@ -11,6 +11,7 @@ export default mergeConfig(
       root: fileURLToPath(new URL('./', import.meta.url)),
       // Пояс машины не совпадает с поясом расписания — тесты должны это пережить
       env: { TZ: 'America/New_York' },
+      setupFiles: ['src/__tests__/setup.ts'],
     },
   }),
 )

@@ -1,4 +1,4 @@
-.PHONY: setup up down logs check fix e2e fresh
+.PHONY: setup up down logs check fix types e2e fresh
 
 # От клона до работающего приложения. Повторный запуск безопасен.
 setup:
@@ -18,12 +18,18 @@ logs:
 	docker compose logs -f backend frontend
 
 check:
+	$(MAKE) types
+	@git diff --quiet -- frontend/src/api/schema.d.ts || (echo "Схема API изменилась: закоммитьте frontend/src/api/schema.d.ts" && exit 1)
 	docker compose exec -T backend composer check
 	docker compose exec -T frontend npm run check
 
 fix:
 	docker compose exec -T backend vendor/bin/pint
 	docker compose exec -T frontend sh -c "npm run lint && npm run format"
+
+# TS-типы API из OpenAPI-схемы backend (Scramble)
+types:
+	docker compose exec -T frontend npx openapi-typescript http://backend:8000/docs/api.json -o src/api/schema.d.ts
 
 e2e:
 	docker compose exec -T backend php artisan db:seed
