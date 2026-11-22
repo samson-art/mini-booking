@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 class Booking extends Model
 {
     // cancelled_at и id массовым присваиванием не задать
-    protected $fillable = ['slot_id', 'customer_name', 'customer_email'];
+    protected $fillable = ['slot_id', 'customer_name', 'customer_email', 'idempotency_key'];
 
     protected function casts(): array
     {

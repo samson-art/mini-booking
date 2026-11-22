@@ -16,7 +16,11 @@ export default defineConfig({
   server: {
     // Браузер видит один origin: запросы /api проксируются в backend, CORS не нужен
     proxy: {
-      '/api': process.env.API_PROXY_TARGET ?? 'http://localhost:8000',
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:8000',
+        // Адрес клиента в X-Forwarded-For: backend считает rate limit по клиенту, а не по прокси
+        xfwd: true,
+      },
     },
     // Контейнер e2e открывает страницу по имени сервиса
     allowedHosts: ['frontend'],

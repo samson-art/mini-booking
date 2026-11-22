@@ -5,4 +5,6 @@ return [
     'days' => (int) env('BOOKING_DAYS', 7),
     'open_hour' => (int) env('BOOKING_OPEN_HOUR', 9),
     'close_hour' => (int) env('BOOKING_CLOSE_HOUR', 18),
+    // POST и DELETE броней в минуту с одного клиента
+    'rate_limit' => (int) env('BOOKING_RATE_LIMIT', 30),
 ];
