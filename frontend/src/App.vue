@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import Button from 'primevue/button'
+import ConfirmDialog from 'primevue/confirmdialog'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
+import Toast from 'primevue/toast'
+import BookingDialog from '@/components/BookingDialog.vue'
 import SlotList from '@/components/SlotList.vue'
 import { useSlots } from '@/composables/useSlots'
+import type { Slot } from '@/api/bookings'
 import { dateKey, dateLabel } from '@/time'
 
 const { slots, timezone, isLoading, error, load } = useSlots()
@@ -34,6 +38,15 @@ watch(dates, (options) => {
 const visibleSlots = computed(() =>
   slots.value.filter((slot) => dateKey(slot.starts_at, timezone.value) === selectedDate.value),
 )
+
+// Слот, для которого открыта форма брони
+const bookingSlot = ref<Slot | null>(null)
+const bookingOpen = ref(false)
+
+function openBooking(slot: Slot): void {
+  bookingSlot.value = slot
+  bookingOpen.value = true
+}
 </script>
 
 <template>
@@ -66,8 +79,17 @@ const visibleSlots = computed(() =>
         aria-label="Дата"
         class="page__date"
       />
-      <SlotList :slots="visibleSlots" :timezone="timezone" @reload="load" />
+      <SlotList :slots="visibleSlots" :timezone="timezone" @book="openBooking" @reload="load" />
     </template>
+
+    <BookingDialog
+      v-model:visible="bookingOpen"
+      :booking-slot="bookingSlot"
+      :timezone="timezone"
+      @reload="load"
+    />
+    <Toast position="top-center" />
+    <ConfirmDialog :style="{ width: '26rem' }" :breakpoints="{ '480px': 'calc(100vw - 2rem)' }" />
   </main>
 </template>
 

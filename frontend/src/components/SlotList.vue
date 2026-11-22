@@ -1,16 +1,68 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import type { Slot } from '@/api/bookings'
-import { slotRange } from '@/time'
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+import { cancelBooking, type Slot } from '@/api/bookings'
+import { ApiError } from '@/api/client'
+import { slotLabel, slotRange } from '@/time'
 
-defineProps<{ slots: Slot[]; timezone: string }>()
+const props = defineProps<{ slots: Slot[]; timezone: string }>()
 
-defineEmits<{
+const emit = defineEmits<{
   book: [slot: Slot]
   // список устарел (после отмены) — родитель перезагружает
   reload: []
 }>()
+
+const confirm = useConfirm()
+const toast = useToast()
+
+// Слот, чья отмена сейчас идёт: его кнопка в loading
+const cancellingId = ref<number | null>(null)
+
+function cancel(slot: Slot): void {
+  confirm.require({
+    header: 'Отмена бронирования',
+    message: `Отменить бронирование: ${slotLabel(slot, props.timezone)}?`,
+    acceptLabel: 'Да, отменить',
+    rejectLabel: 'Нет',
+    accept: async () => {
+      cancellingId.value = slot.id
+      try {
+        await cancelBooking(slot.booking_id!)
+        toast.add({ severity: 'success', summary: 'Бронирование отменено', life: 3000 })
+        emit('reload')
+      } catch (error) {
+        if (!(error instanceof ApiError)) throw error
+
+        if (error.status === 404) {
+          // Брони уже нет (отменили в другой вкладке) — цель достигнута
+          toast.add({ severity: 'info', summary: 'Бронирование уже отменено', life: 3000 })
+          emit('reload')
+        } else if (error.status === 409) {
+          // Слот успел начаться, пока страница была открыта
+          toast.add({
+            severity: 'warn',
+            summary: 'Не удалось отменить',
+            detail: error.message,
+            life: 5000,
+          })
+          emit('reload')
+        } else {
+          const detail =
+            error.status === 429
+              ? error.message
+              : 'Не удалось отменить бронирование. Попробуйте ещё раз.'
+          toast.add({ severity: 'error', summary: 'Ошибка', detail, life: 5000 })
+        }
+      } finally {
+        cancellingId.value = null
+      }
+    },
+  })
+}
 
 const statuses = {
   available: { label: 'Свободно', severity: 'success' },
@@ -45,6 +97,8 @@ const statuses = {
         severity="danger"
         outlined
         size="small"
+        :loading="cancellingId === slot.id"
+        @click="cancel(slot)"
       />
     </li>
   </ul>

@@ -1,13 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
+import ConfirmationService from 'primevue/confirmationservice'
+import ToastService from 'primevue/toastservice'
 import Select from 'primevue/select'
 import App from '../App.vue'
 import SlotList from '@/components/SlotList.vue'
 import { getSlots, type Slot, type SlotsResponse } from '@/api/bookings'
 import { ApiError } from '@/api/client'
 
-vi.mock('@/api/bookings', () => ({ getSlots: vi.fn<typeof import('@/api/bookings').getSlots>() }))
+vi.mock('@/api/bookings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/api/bookings')>()),
+  getSlots: vi.fn<typeof import('@/api/bookings').getSlots>(),
+}))
 const getSlotsMock = vi.mocked(getSlots)
 
 function slot(id: number, day: string, hour: number): Slot {
@@ -33,7 +38,7 @@ const twoDays = response(
 )
 
 function mountApp() {
-  return mount(App, { global: { plugins: [PrimeVue] } })
+  return mount(App, { global: { plugins: [PrimeVue, ToastService, ConfirmationService] } })
 }
 
 const shownTimes = (wrapper: ReturnType<typeof mountApp>) =>
