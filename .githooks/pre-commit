@@ -1,0 +1,7 @@
+#!/bin/sh
+# Перед коммитом — те же проверки, что в CI (без e2e)
+if [ -z "$(docker compose ps -q --status running backend)" ] || [ -z "$(docker compose ps -q --status running frontend)" ]; then
+  echo "Контейнеры не запущены. Запустите make up" >&2
+  exit 1
+fi
+exec make check

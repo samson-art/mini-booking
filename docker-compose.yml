@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: booking
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U booking -d booking"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  backend:
+    build: docker/php
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    environment:
+      # Несколько воркеров, чтобы запросы шли параллельно (работает только с --no-reload)
+      PHP_CLI_SERVER_WORKERS: 4
+    command: >
+      sh -c "composer install --no-interaction
+      && (grep -qE '^APP_KEY=.+' .env || php artisan key:generate)
+      && php artisan serve --host=0.0.0.0 --port=8000 --no-reload"
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/up > /dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 300s
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5173 > /dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 300s
+
+  e2e:
+    # Версия образа = версия @playwright/test в frontend/package.json
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
+    profiles: [e2e]
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    environment:
+      BASE_URL: http://frontend:5173
+      CI: ${CI:-}
+    ipc: host
+    command: npx playwright test
+    depends_on:
+      frontend:
+        condition: service_healthy
+
+volumes:
+  db-data:
