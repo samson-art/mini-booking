@@ -16,6 +16,11 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Тесты не зависят от dev .env: пояс и расписание закреплены -->
+        <env name="APP_TIMEZONE" value="Europe/Moscow" force="true"/>
+        <env name="BOOKING_DAYS" value="7" force="true"/>
+        <env name="BOOKING_OPEN_HOUR" value="9" force="true"/>
+        <env name="BOOKING_CLOSE_HOUR" value="18" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

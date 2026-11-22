@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Пояс сессии Postgres = пояс приложения. Laravel пишет время без смещения ("09:00"),
+            // и Postgres читает его в поясе сессии; при UTC слоты уехали бы на 3 часа.
+            'timezone' => env('APP_TIMEZONE', 'UTC'),
         ],
 
         'sqlsrv' => [
