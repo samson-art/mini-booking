@@ -16,6 +16,11 @@ export default defineConfig({
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 5'], viewport: { width: 375, height: 740 } } },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 5'], viewport: { width: 375, height: 740 } },
+      // Гонку (E2) гоняем только в desktop: от вьюпорта она не зависит, а лимит запросов общий
+      grepInvert: /E2:/,
+    },
   ],
 })
