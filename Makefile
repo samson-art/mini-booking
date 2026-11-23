@@ -6,7 +6,9 @@ setup:
 	$(MAKE) up
 	docker compose exec -T backend php artisan migrate
 	docker compose exec -T backend php artisan db:seed
-	git config core.hooksPath .githooks && echo "pre-commit хук включён: перед коммитом запускается make check"
+	@git config core.hooksPath .githooks 2>/dev/null \
+		&& echo "pre-commit хук включён: перед коммитом запускается make check" \
+		|| echo "Не git-репозиторий (скачан архивом): pre-commit хук не включён, остальное готово"
 
 up:
 	docker compose up -d --wait

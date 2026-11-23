@@ -88,7 +88,8 @@ function openBooking(slot: Slot): void {
       :timezone="timezone"
       @reload="load"
     />
-    <Toast position="top-center" />
+    <!-- По умолчанию toast 25rem — шире телефона; на узком экране сужаем до ширины экрана -->
+    <Toast position="top-center" :breakpoints="{ '480px': { width: 'calc(100vw - 2rem)' } }" />
     <ConfirmDialog :style="{ width: '26rem' }" :breakpoints="{ '480px': 'calc(100vw - 2rem)' }" />
   </main>
 </template>

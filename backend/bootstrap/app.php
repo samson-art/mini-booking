@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // X-Forwarded-For принимаем только от прокси из частных сетей (в dev — контейнер frontend с Vite).
-        // ponytail: в dev клиент с частного адреса может подделать заголовок и обойти лимит;
+        // В dev клиент с частного адреса может подделать заголовок и обойти лимит;
         // в проде здесь только адрес балансировщика.
         $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']);
     })

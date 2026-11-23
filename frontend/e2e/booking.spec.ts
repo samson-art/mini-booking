@@ -65,6 +65,17 @@ test('E1: book a slot after a lost response, then cancel it', async ({ page }) =
   // Повтор идёт с тем же Idempotency-Key и получает ту же бронь, а не 409
   await dialog.getByRole('button', { name: 'Забронировать' }).click()
   await expect(page.getByText('Слот забронирован')).toBeVisible()
+
+  // Toast целиком в пределах экрана, в том числе на 375 px
+  // (меряем после анимации появления: во время неё toast уже, чем на самом деле)
+  const toast = page.getByRole('alert').filter({ hasText: 'Слот забронирован' })
+  await toast.evaluate((el) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((animation) => animation.finished)),
+  )
+  const box = (await toast.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+
   await expect(slotRow).toContainText('Занято')
 
   await slotRow.getByRole('button', { name: 'Отменить' }).click()
